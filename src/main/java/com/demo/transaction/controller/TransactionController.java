@@ -1,8 +1,6 @@
 package com.demo.transaction.controller;
 
-import ch.qos.logback.classic.model.processor.ConfigurationModelHandler;
 import com.demo.transaction.dto.TransactionDTO;
-import com.demo.transaction.dto.UserDTO;
 import com.demo.transaction.dto.request.TransactionRequest;
 import com.demo.transaction.dto.request.TransactionUpdateRequest;
 import com.demo.transaction.dto.response.ApiResponse;

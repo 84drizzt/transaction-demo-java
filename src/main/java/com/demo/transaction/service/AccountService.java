@@ -2,7 +2,6 @@ package com.demo.transaction.service;
 
 import com.demo.transaction.dto.AccountDTO;
 import com.demo.transaction.entity.Account;
-import com.demo.transaction.entity.User;
 import com.demo.transaction.enumeration.SearchOperation;
 import com.demo.transaction.repository.AccountRepository;
 import com.demo.transaction.repository.SpecificationBuilder;
@@ -14,10 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
