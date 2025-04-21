@@ -1,10 +1,9 @@
 package com.demo.transaction.service;
 
-import com.demo.transaction.dto.AccountDTO;
 import com.demo.transaction.dto.TransactionDTO;
+import com.demo.transaction.dto.request.TransactionUpdateRequest;
 import com.demo.transaction.entity.Account;
 import com.demo.transaction.entity.Transaction;
-import com.demo.transaction.entity.User;
 import com.demo.transaction.enumeration.SearchOperation;
 import com.demo.transaction.enumeration.TransactionType;
 import com.demo.transaction.repository.AccountRepository;
@@ -18,11 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -38,6 +35,7 @@ public class TransactionService {
     @Transactional(readOnly = true)
     public Optional<TransactionDTO> getTransactionById(Long id) {
         return transactionRepository.findById(id)
+                .filter(transaction -> !transaction.getDeleted())
                 .map(this::convertToDTO);
     }
 
@@ -48,7 +46,8 @@ public class TransactionService {
         SpecificationBuilder<Transaction> builder = new SpecificationBuilder<Transaction>()
                 .with("account.id", searchDTO.getAccountId(), SearchOperation.EQUAL)
                 .with("transactionNumber", searchDTO.getTransactionNumber(), SearchOperation.EQUAL)
-                .with("account.id", searchDTO.getRelatedAccountId(), SearchOperation.EQUAL);
+                .with("relatedAccount.id", searchDTO.getRelatedAccountId(), SearchOperation.EQUAL)
+                .with("deleted", false, SearchOperation.EQUAL);
 
         Page<Transaction> transactions = transactionRepository.findAll(builder.build(), pageable);
         return transactions.stream()
@@ -139,7 +138,43 @@ public class TransactionService {
         transaction = transactionRepository.save(transaction);
         return convertToDTO(transaction);
     }
-
+    
+    /**
+     * 更新交易信息
+     * @param id 交易ID
+     * @param request 更新请求
+     * @return 更新后的交易
+     */
+    public TransactionDTO updateTransaction(Long id, TransactionUpdateRequest request) {
+        Transaction transaction = transactionRepository.findById(id)
+                .filter(t -> !t.getDeleted())
+                .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
+        
+        // 只允许更新描述和参考号，不允许更新金额、账户等关键信息
+        if (request.getDescription() != null) {
+            transaction.setDescription(request.getDescription());
+        }
+        
+        if (request.getReferenceNumber() != null) {
+            transaction.setReferenceNumber(request.getReferenceNumber());
+        }
+        
+        transaction = transactionRepository.save(transaction);
+        return convertToDTO(transaction);
+    }
+    
+    /**
+     * 软删除交易
+     * @param id 交易ID
+     */
+    public void softDeleteTransaction(Long id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .filter(t -> !t.getDeleted())
+                .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
+        
+        transaction.setDeleted(true);
+        transactionRepository.save(transaction);
+    }
 
     private String generateTransactionNumber() {
         return UUID.randomUUID().toString().replace("-", "");

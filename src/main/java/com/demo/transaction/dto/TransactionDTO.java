@@ -18,5 +18,4 @@ public class TransactionDTO {
     private String referenceNumber;
     private Long relatedAccountId;
     private LocalDateTime transactionTime;
-    private Short status;
 } 

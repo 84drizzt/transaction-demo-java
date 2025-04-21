@@ -2,6 +2,7 @@ package com.demo.transaction.controller;
 
 import com.demo.transaction.dto.TransactionDTO;
 import com.demo.transaction.dto.request.TransactionRequest;
+import com.demo.transaction.dto.request.TransactionUpdateRequest;
 import com.demo.transaction.dto.response.ApiResponse;
 import com.demo.transaction.enumeration.TransactionType;
 import com.demo.transaction.service.TransactionService;
@@ -210,5 +211,94 @@ class TransactionControllerTest {
                     pageable.getSort().getOrderFor("transactionNumber").getDirection() == Sort.Direction.DESC
                 )
         );
+    }
+
+    @Test
+    void updateTransaction_WhenSuccessful_ShouldReturnUpdatedTransaction() {
+        // 准备测试数据
+        Long transactionId = 1L;
+        TransactionUpdateRequest request = new TransactionUpdateRequest();
+        request.setDescription("Updated description");
+        request.setReferenceNumber("Updated REF");
+
+        TransactionDTO expectedTransaction = new TransactionDTO();
+        expectedTransaction.setId(transactionId);
+        expectedTransaction.setDescription("Updated description");
+        expectedTransaction.setReferenceNumber("Updated REF");
+
+        // 配置mock行为
+        when(transactionService.updateTransaction(eq(transactionId), any(TransactionUpdateRequest.class)))
+                .thenReturn(expectedTransaction);
+
+        // 执行测试
+        ResponseEntity<ApiResponse<TransactionDTO>> response = transactionController.updateTransaction(transactionId, request);
+
+        // 验证结果
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
+        assertEquals("Transaction Updated", response.getBody().getMessage());
+        assertEquals(expectedTransaction, response.getBody().getData());
+    }
+
+    @Test
+    void updateTransaction_WhenTransactionNotFound_ShouldReturnNotFound() {
+        // 准备测试数据
+        Long transactionId = 1L;
+        TransactionUpdateRequest request = new TransactionUpdateRequest();
+
+        // 配置mock行为
+        when(transactionService.updateTransaction(eq(transactionId), any(TransactionUpdateRequest.class)))
+                .thenThrow(new RuntimeException("Transaction not found with id: " + transactionId));
+
+        // 执行测试
+        ResponseEntity<ApiResponse<TransactionDTO>> response = transactionController.updateTransaction(transactionId, request);
+
+        // 验证结果
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(ApiResponse.FAILURE, response.getBody().getCode());
+        assertEquals("Transaction not found with id: " + transactionId, response.getBody().getMessage());
+    }
+
+    @Test
+    void softDeleteTransaction_WhenSuccessful_ShouldReturnSuccess() {
+        // 准备测试数据
+        Long transactionId = 1L;
+
+        // 配置mock行为
+        doNothing().when(transactionService).softDeleteTransaction(transactionId);
+
+        // 执行测试
+        ResponseEntity<ApiResponse<Void>> response = transactionController.softDeleteTransaction(transactionId);
+
+        // 验证结果
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
+        assertEquals("Transaction Deleted", response.getBody().getMessage());
+    }
+
+    @Test
+    void softDeleteTransaction_WhenTransactionNotFound_ShouldReturnNotFound() {
+        // 准备测试数据
+        Long transactionId = 1L;
+
+        // 配置mock行为
+        doThrow(new RuntimeException("Transaction not found with id: " + transactionId))
+                .when(transactionService).softDeleteTransaction(transactionId);
+
+        // 执行测试
+        ResponseEntity<ApiResponse<Void>> response = transactionController.softDeleteTransaction(transactionId);
+
+        // 验证结果
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(ApiResponse.FAILURE, response.getBody().getCode());
+        assertEquals("Transaction not found with id: " + transactionId, response.getBody().getMessage());
     }
 } 

@@ -36,7 +36,7 @@ INSERT INTO accounts (account_number, user_id, balance, currency, created_at, up
 
 
 -- Insert sample transactions
-INSERT INTO transactions (transaction_number, account_id, type, amount, balance_before, balance_after, description, reference_number, related_account_id, transaction_time, status, created_at, updated_at) VALUES
+INSERT INTO transactions (transaction_number, account_id, type, amount, balance_before, balance_after, description, reference_number, related_account_id, transaction_time, deleted, created_at, updated_at) VALUES
 ('TXN100000001', 1, 'DEPOSIT', 5000.0000, 0.0000, 5000.0000, 'Initial deposit', '', NULL, '2025-04-21 10:00:00', 0, '2025-04-21 10:00:00', '2025-04-21 10:00:00'),
 ('TXN100000002', 2, 'DEPOSIT', 10000.0000, 0.0000, 10000.0000, 'Initial deposit', '', NULL, '2025-04-21 10:05:00', 0, '2025-04-21 10:05:00', '2025-04-21 10:05:00'),
 ('TXN100000003', 3, 'DEPOSIT', 7500.0000, 0.0000, 7500.0000, 'Initial deposit', '', NULL, '2025-04-16 11:00:00', 0, '2025-04-16 11:00:00', '2025-04-16 11:00:00'),

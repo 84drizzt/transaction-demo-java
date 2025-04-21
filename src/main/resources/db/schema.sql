@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     reference_number VARCHAR(50),
     related_account_id BIGINT,
     transaction_time TIMESTAMP NOT NULL,
-    status SMALLINT,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
 );

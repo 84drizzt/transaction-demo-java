@@ -4,6 +4,7 @@ import ch.qos.logback.classic.model.processor.ConfigurationModelHandler;
 import com.demo.transaction.dto.TransactionDTO;
 import com.demo.transaction.dto.UserDTO;
 import com.demo.transaction.dto.request.TransactionRequest;
+import com.demo.transaction.dto.request.TransactionUpdateRequest;
 import com.demo.transaction.dto.response.ApiResponse;
 import com.demo.transaction.service.TransactionService;
 import com.demo.transaction.strategy.TransactionHandler;
@@ -47,7 +48,7 @@ public class TransactionController {
         return transactionService.getTransactionById(id)
                 .map(transaction -> ResponseEntity.ok(ApiResponse.success(transaction)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Transaction Not Found")));
+                        .body(ApiResponse.error("交易不存在")));
     }
 
 
@@ -58,6 +59,32 @@ public class TransactionController {
             return ResponseEntity.ok(ApiResponse.success("交易成功", dto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<TransactionDTO>> updateTransaction(
+            @PathVariable Long id,
+            @RequestBody TransactionUpdateRequest request) {
+        try {
+            TransactionDTO updatedTransaction = transactionService.updateTransaction(id, request);
+            return ResponseEntity.ok(ApiResponse.success("Transaction Updated", updatedTransaction));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> softDeleteTransaction(@PathVariable Long id) {
+        try {
+            transactionService.softDeleteTransaction(id);
+            return ResponseEntity.ok(ApiResponse.success("Transaction Deleted", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 } 
