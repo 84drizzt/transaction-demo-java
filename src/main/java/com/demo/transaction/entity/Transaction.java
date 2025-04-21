@@ -48,6 +48,9 @@ public class Transaction {
     private LocalDateTime transactionTime;
 
     @Column(nullable = false)
+    private Short status;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
@@ -56,6 +59,7 @@ public class Transaction {
     @PrePersist
     protected void onCreate() {
         transactionTime = LocalDateTime.now();
+        status = 0;
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }

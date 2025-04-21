@@ -14,9 +14,11 @@ public class ApiResponse<T> {
 
     public static final Integer SUCCESS = 0;
     public static final Integer FAILURE = 1;
+    public static final String DEFAULT_SUCCESS_MESSAGE = "Success";
+
 
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(SUCCESS, "Success", data);
+        return new ApiResponse<>(SUCCESS, DEFAULT_SUCCESS_MESSAGE, data);
     }
 
     public static <T> ApiResponse<T> success(String message, T data) {
