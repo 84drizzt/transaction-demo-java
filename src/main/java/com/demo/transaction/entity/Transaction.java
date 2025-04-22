@@ -8,7 +8,13 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "transactions")
+@Table(name = "transactions", indexes = {
+    @Index(name = "idx_transactions_number", columnList = "transaction_number"),
+    @Index(name = "idx_transactions_account", columnList = "account_id"),
+    @Index(name = "idx_transactions_type", columnList = "type"),
+    @Index(name = "idx_transactions_time", columnList = "transaction_time"),
+    @Index(name = "idx_transactions_related", columnList = "related_account_id")
+})
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

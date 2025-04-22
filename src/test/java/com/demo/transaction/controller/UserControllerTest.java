@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -41,14 +42,22 @@ class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(1L);
         userDTO.setUsername("testUser");
-        List<UserDTO> expectedUsers = Arrays.asList(userDTO);
+        List<UserDTO> content = Arrays.asList(userDTO);
+
+        // 创建Page mock
+        Page<UserDTO> page = mock(Page.class);
+        when(page.getContent()).thenReturn(content);
+        when(page.getTotalElements()).thenReturn(1L);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getNumber()).thenReturn(0);
+        when(page.getSize()).thenReturn(5);
 
         // 配置mock行为
         when(userService.getUsersByParameters(any(UserDTO.class), any(Pageable.class)))
-                .thenReturn(expectedUsers);
+                .thenReturn(page);
 
         // 执行测试
-        ResponseEntity<ApiResponse<List<UserDTO>>> response = userController.listUsersWithParameters(
+        ResponseEntity<ApiResponse<Page<UserDTO>>> response = userController.listUsersWithParameters(
                 new UserDTO(), 0, 5, "id", "asc");
 
         // 验证结果
@@ -57,7 +66,8 @@ class UserControllerTest {
         assertNotNull(response.getBody());
         assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
         assertEquals(ApiResponse.DEFAULT_SUCCESS_MESSAGE, response.getBody().getMessage());
-        assertEquals(expectedUsers, response.getBody().getData());
+        assertEquals(content, response.getBody().getData().getContent());
+        assertEquals(1L, response.getBody().getData().getTotalElements());
     }
 
     @Test
@@ -107,14 +117,22 @@ class UserControllerTest {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(1L);
         userDTO.setUsername("testUser");
-        List<UserDTO> expectedUsers = Arrays.asList(userDTO);
+        List<UserDTO> content = Arrays.asList(userDTO);
+
+        // 创建Page mock
+        Page<UserDTO> page = mock(Page.class);
+        when(page.getContent()).thenReturn(content);
+        when(page.getTotalElements()).thenReturn(1L);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getNumber()).thenReturn(1);
+        when(page.getSize()).thenReturn(10);
 
         // 配置mock行为
         when(userService.getUsersByParameters(any(UserDTO.class), any(Pageable.class)))
-                .thenReturn(expectedUsers);
+                .thenReturn(page);
 
         // 执行测试 - 使用不同的分页和排序参数
-        ResponseEntity<ApiResponse<List<UserDTO>>> response = userController.listUsersWithParameters(
+        ResponseEntity<ApiResponse<Page<UserDTO>>> response = userController.listUsersWithParameters(
                 new UserDTO(), 1, 10, "username", "desc");
 
         // 验证结果
@@ -122,7 +140,8 @@ class UserControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
-        assertEquals(expectedUsers, response.getBody().getData());
+        assertEquals(content, response.getBody().getData().getContent());
+        assertEquals(1L, response.getBody().getData().getTotalElements());
 
         // 验证service方法被调用时使用了正确的参数
         verify(userService).getUsersByParameters(

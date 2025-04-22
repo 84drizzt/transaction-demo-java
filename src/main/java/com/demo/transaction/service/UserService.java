@@ -12,9 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -33,23 +31,20 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserDTO> getUsersByParameters(UserDTO searchDTO, Pageable pageable) {
-
+    public Page<UserDTO> getUsersByParameters(UserDTO searchDTO, Pageable pageable) {
         SpecificationBuilder<User> builder = new SpecificationBuilder<User>()
+                .with("id", searchDTO.getId(), SearchOperation.LIKE)
                 .with("username", searchDTO.getUsername(), SearchOperation.LIKE)
                 .with("email", searchDTO.getEmail(), SearchOperation.LIKE)
-                .with("fullName", searchDTO.getEmail(), SearchOperation.LIKE)
+                .with("fullName", searchDTO.getFullName(), SearchOperation.LIKE)
                 .with("phoneNumber", searchDTO.getPhoneNumber(), SearchOperation.LIKE);
 
-        Page<User> users = userRepository.findAll(builder.build(), pageable);
-
-        return users.stream()
+        return userRepository.findAll(builder.build(), pageable)
                 .map(user -> {
                     UserDTO userDTO = new UserDTO();
                     BeanUtils.copyProperties(user, userDTO);
                     return userDTO;
-                })
-                .collect(Collectors.toList());
+                });
     }
 
 } 

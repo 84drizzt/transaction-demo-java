@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -44,14 +46,22 @@ class AccountControllerTest {
         accountDTO.setUserId(1L);
         accountDTO.setBalance(new BigDecimal("1000.00"));
         accountDTO.setCurrency("CNY");
-        List<AccountDTO> expectedAccounts = Arrays.asList(accountDTO);
+        List<AccountDTO> content = Arrays.asList(accountDTO);
+
+        // 创建Page mock
+        Page<AccountDTO> page = mock(Page.class);
+        when(page.getContent()).thenReturn(content);
+        when(page.getTotalElements()).thenReturn(1L);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getNumber()).thenReturn(0);
+        when(page.getSize()).thenReturn(5);
 
         // 配置mock行为
         when(accountService.getAccountsByParameters(any(AccountDTO.class), any(Pageable.class)))
-                .thenReturn(expectedAccounts);
+                .thenReturn(page);
 
         // 执行测试
-        ResponseEntity<ApiResponse<List<AccountDTO>>> response = accountController.listAccountsWithParameters(
+        ResponseEntity<ApiResponse<Page<AccountDTO>>> response = accountController.listAccountsWithParameters(
                 new AccountDTO(), 0, 5, "id", "asc");
 
         // 验证结果
@@ -60,7 +70,8 @@ class AccountControllerTest {
         assertNotNull(response.getBody());
         assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
         assertEquals(ApiResponse.DEFAULT_SUCCESS_MESSAGE, response.getBody().getMessage());
-        assertEquals(expectedAccounts, response.getBody().getData());
+        assertEquals(content, response.getBody().getData().getContent());
+        assertEquals(1L, response.getBody().getData().getTotalElements());
     }
 
     @Test
@@ -116,14 +127,22 @@ class AccountControllerTest {
         accountDTO.setUserId(1L);
         accountDTO.setBalance(new BigDecimal("1000.00"));
         accountDTO.setCurrency("CNY");
-        List<AccountDTO> expectedAccounts = Arrays.asList(accountDTO);
+        List<AccountDTO> content = Arrays.asList(accountDTO);
+
+        // 创建Page mock
+        Page<AccountDTO> page = mock(Page.class);
+        when(page.getContent()).thenReturn(content);
+        when(page.getTotalElements()).thenReturn(1L);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getNumber()).thenReturn(1);
+        when(page.getSize()).thenReturn(10);
 
         // 配置mock行为
         when(accountService.getAccountsByParameters(any(AccountDTO.class), any(Pageable.class)))
-                .thenReturn(expectedAccounts);
+                .thenReturn(page);
 
         // 执行测试 - 使用不同的分页和排序参数
-        ResponseEntity<ApiResponse<List<AccountDTO>>> response = accountController.listAccountsWithParameters(
+        ResponseEntity<ApiResponse<Page<AccountDTO>>> response = accountController.listAccountsWithParameters(
                 new AccountDTO(), 1, 10, "accountNumber", "desc");
 
         // 验证结果
@@ -131,7 +150,8 @@ class AccountControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
-        assertEquals(expectedAccounts, response.getBody().getData());
+        assertEquals(content, response.getBody().getData().getContent());
+        assertEquals(1L, response.getBody().getData().getTotalElements());
 
         // 验证service方法被调用时使用了正确的参数
         verify(accountService).getAccountsByParameters(

@@ -11,6 +11,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,9 +32,8 @@ public class TransactionController {
     @Autowired
     TransactionHandler transactionHandler;
 
-
     @GetMapping
-    public ResponseEntity<ApiResponse<List<TransactionDTO>>> listTransactionsWithParameters(
+    public ResponseEntity<ApiResponse<Page<TransactionDTO>>> listTransactionsWithParameters(
             TransactionDTO transactionDTO,
             @DecimalMax(value = "100", message = "page must be 0~100")
             @RequestParam(defaultValue = "0") int page,
@@ -46,7 +46,7 @@ public class TransactionController {
 
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortField);
         Pageable pageable = PageRequest.of(page, size, sort);
-        List<TransactionDTO> transactions = transactionService.getTransactionsByParameters(transactionDTO, pageable);
+        Page<TransactionDTO> transactions = transactionService.getTransactionsByParameters(transactionDTO, pageable);
         return ResponseEntity.ok(ApiResponse.success(transactions));
     }
 
@@ -64,12 +64,12 @@ public class TransactionController {
     public ResponseEntity<ApiResponse<TransactionDTO>> processTransaction(@Valid @RequestBody TransactionRequest request) {
         try {
             TransactionDTO dto = transactionHandler.handle(request);
-            return ResponseEntity.ok(ApiResponse.success("交易成功", dto));
+            return ResponseEntity.ok(ApiResponse.success("Transaction Processed", dto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
-    
+
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<TransactionDTO>> updateTransaction(
@@ -83,7 +83,7 @@ public class TransactionController {
                     .body(ApiResponse.error(e.getMessage()));
         }
     }
-    
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> softDeleteTransaction(@PathVariable Long id) {

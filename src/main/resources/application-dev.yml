@@ -1,7 +1,12 @@
 server:
   port: 8080
-# test or prod env
+
+# dev env
 spring:
+  profiles:
+    activate:
+      on-profile: dev
+
   application:
     name: transaction-demo
   datasource:
@@ -12,7 +17,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: ${DB_DDL_AUTO:none}
+      ddl-auto: ${DB_DDL_AUTO:validate}
     show-sql: ${DB_SHOW_SQL:true}
   h2:
     console:
@@ -26,7 +31,7 @@ spring:
 
 logging:
   level:
-    root: WARN
-    com.demo: INFO
+    root: INFO
+    com.demo: DEBUG
   file:
-    name: myapp.log
+    name: dev.log

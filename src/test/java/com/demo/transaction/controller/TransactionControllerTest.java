@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -55,14 +57,22 @@ class TransactionControllerTest {
         transactionDTO.setBalanceBefore(new BigDecimal("0.00"));
         transactionDTO.setBalanceAfter(new BigDecimal("1000.00"));
         transactionDTO.setTransactionTime(LocalDateTime.now());
-        List<TransactionDTO> expectedTransactions = Arrays.asList(transactionDTO);
+        List<TransactionDTO> content = Arrays.asList(transactionDTO);
+
+        // 创建Page mock
+        Page<TransactionDTO> page = mock(Page.class);
+        when(page.getContent()).thenReturn(content);
+        when(page.getTotalElements()).thenReturn(1L);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getNumber()).thenReturn(0);
+        when(page.getSize()).thenReturn(5);
 
         // 配置mock行为
         when(transactionService.getTransactionsByParameters(any(TransactionDTO.class), any(Pageable.class)))
-                .thenReturn(expectedTransactions);
+                .thenReturn(page);
 
         // 执行测试
-        ResponseEntity<ApiResponse<List<TransactionDTO>>> response = transactionController.listTransactionsWithParameters(
+        ResponseEntity<ApiResponse<Page<TransactionDTO>>> response = transactionController.listTransactionsWithParameters(
                 new TransactionDTO(), 0, 5, "id", "asc");
 
         // 验证结果
@@ -71,7 +81,8 @@ class TransactionControllerTest {
         assertNotNull(response.getBody());
         assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
         assertEquals(ApiResponse.DEFAULT_SUCCESS_MESSAGE, response.getBody().getMessage());
-        assertEquals(expectedTransactions, response.getBody().getData());
+        assertEquals(content, response.getBody().getData().getContent());
+        assertEquals(1L, response.getBody().getData().getTotalElements());
     }
 
     @Test
@@ -148,7 +159,7 @@ class TransactionControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
-        assertEquals("交易成功", response.getBody().getMessage());
+        assertEquals("Transaction Processed", response.getBody().getMessage());
         assertEquals(expectedTransaction, response.getBody().getData());
     }
 
@@ -185,14 +196,22 @@ class TransactionControllerTest {
         transactionDTO.setAccountId(1L);
         transactionDTO.setType(TransactionType.DEPOSIT);
         transactionDTO.setAmount(new BigDecimal("1000.00"));
-        List<TransactionDTO> expectedTransactions = Arrays.asList(transactionDTO);
+        List<TransactionDTO> content = Arrays.asList(transactionDTO);
+
+        // 创建Page mock
+        Page<TransactionDTO> page = mock(Page.class);
+        when(page.getContent()).thenReturn(content);
+        when(page.getTotalElements()).thenReturn(1L);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getNumber()).thenReturn(1);
+        when(page.getSize()).thenReturn(10);
 
         // 配置mock行为
         when(transactionService.getTransactionsByParameters(any(TransactionDTO.class), any(Pageable.class)))
-                .thenReturn(expectedTransactions);
+                .thenReturn(page);
 
         // 执行测试 - 使用不同的分页和排序参数
-        ResponseEntity<ApiResponse<List<TransactionDTO>>> response = transactionController.listTransactionsWithParameters(
+        ResponseEntity<ApiResponse<Page<TransactionDTO>>> response = transactionController.listTransactionsWithParameters(
                 new TransactionDTO(), 1, 10, "transactionNumber", "desc");
 
         // 验证结果
@@ -200,7 +219,8 @@ class TransactionControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(ApiResponse.SUCCESS, response.getBody().getCode());
-        assertEquals(expectedTransactions, response.getBody().getData());
+        assertEquals(content, response.getBody().getData().getContent());
+        assertEquals(1L, response.getBody().getData().getTotalElements());
 
         // 验证service方法被调用时使用了正确的参数
         verify(transactionService).getTransactionsByParameters(

@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,20 +38,19 @@ public class AccountService {
 
 
     @Transactional(readOnly = true)
-    public List<AccountDTO> getAccountsByParameters(AccountDTO searchDTO, Pageable pageable) {
-
+    public Page<AccountDTO> getAccountsByParameters(AccountDTO searchDTO, Pageable pageable) {
         SpecificationBuilder<Account> builder = new SpecificationBuilder<Account>()
+                .with("id", searchDTO.getId(), SearchOperation.EQUAL)
                 .with("user.id", searchDTO.getUserId(), SearchOperation.EQUAL)
                 .with("accountNumber", searchDTO.getAccountNumber(), SearchOperation.EQUAL)
                 .with("currency", searchDTO.getCurrency(), SearchOperation.EQUAL);
 
-        Page<Account> accounts = accountRepository.findAll(builder.build(), pageable);
-        return accounts.stream()
+        return accountRepository.findAll(builder.build(), pageable)
                 .map(account -> {
                     AccountDTO accountDTO = new AccountDTO();
                     BeanUtils.copyProperties(account, accountDTO);
                     accountDTO.setUserId(account.getUser().getId());
                     return accountDTO;
-                }).toList();
+                });
     }
 } 

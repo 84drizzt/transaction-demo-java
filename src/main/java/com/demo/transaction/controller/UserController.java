@@ -7,6 +7,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Validated
 @RestController
@@ -25,14 +24,14 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    /* TODO:
+    /* TODO: when need to implement:
            - createUser
            - updateUser
            - deleteUser
     */
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserDTO>>> listUsersWithParameters(
+    public ResponseEntity<ApiResponse<Page<UserDTO>>> listUsersWithParameters(
             UserDTO userDTO,
             @DecimalMax(value = "100", message = "page must be 0~100")
             @RequestParam(defaultValue = "0") int page,
@@ -45,7 +44,7 @@ public class UserController {
 
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortField);
         Pageable pageable = PageRequest.of(page, size, sort);
-        List<UserDTO> users = userService.getUsersByParameters(userDTO, pageable);
+        Page<UserDTO> users = userService.getUsersByParameters(userDTO, pageable);
         return ResponseEntity.ok(ApiResponse.success(users));
     }
 

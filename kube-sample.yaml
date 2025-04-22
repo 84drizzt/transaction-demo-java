@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: transaction-demo-app
+  labels:
+    app: transaction-demo
+spec:
+  containers:
+    - name: app
+      image: transaction-demo-app:latest
+      ports:
+        - containerPort: 8080
+      env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-demo-service
+spec:
+  selector:
+    app: transaction-demo
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort  # 或改为 ClusterIP / LoadBalancer，根据环境决定

@@ -6,6 +6,7 @@ import com.demo.transaction.enumeration.TransactionType;
 import com.demo.transaction.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import java.util.Map;
 import java.util.function.Function;
 
@@ -28,6 +29,9 @@ public class TransactionHandler {
     );
 
     public TransactionDTO handle(TransactionRequest request) {
+        if (request.getType() == null) {
+            throw new IllegalArgumentException("Transaction type cannot be null");
+        }
         Function<TransactionRequest, TransactionDTO> handler = handlerMap.get(request.getType());
         if (handler == null) {
             throw new IllegalArgumentException("Transaction Type Not Supported: " + request.getType());
