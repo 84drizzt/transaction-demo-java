@@ -6,16 +6,22 @@ import com.demo.transaction.dto.request.TransactionUpdateRequest;
 import com.demo.transaction.dto.response.ApiResponse;
 import com.demo.transaction.service.TransactionService;
 import com.demo.transaction.strategy.TransactionHandler;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
@@ -29,9 +35,13 @@ public class TransactionController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<TransactionDTO>>> listTransactionsWithParameters(
             TransactionDTO transactionDTO,
+            @DecimalMax(value = "100", message = "page must be 0~100")
             @RequestParam(defaultValue = "0") int page,
+            @DecimalMin(value = "1", message = "size must be 1~100")
+            @DecimalMax(value = "100", message = "size must be 1~100")
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "id") String sortField,
+            @Pattern(regexp = "asc|desc")
             @RequestParam(defaultValue = "asc") String direction) {
 
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortField);
@@ -51,7 +61,7 @@ public class TransactionController {
 
 
     @PostMapping()
-    public ResponseEntity<ApiResponse<TransactionDTO>> processTransaction(@RequestBody TransactionRequest request) {
+    public ResponseEntity<ApiResponse<TransactionDTO>> processTransaction(@Valid @RequestBody TransactionRequest request) {
         try {
             TransactionDTO dto = transactionHandler.handle(request);
             return ResponseEntity.ok(ApiResponse.success("交易成功", dto));

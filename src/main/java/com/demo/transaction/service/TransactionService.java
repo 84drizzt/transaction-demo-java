@@ -6,6 +6,8 @@ import com.demo.transaction.entity.Account;
 import com.demo.transaction.entity.Transaction;
 import com.demo.transaction.enumeration.SearchOperation;
 import com.demo.transaction.enumeration.TransactionType;
+import com.demo.transaction.exception.IllegalTransactionException;
+import com.demo.transaction.exception.TransactionDeletedException;
 import com.demo.transaction.repository.AccountRepository;
 import com.demo.transaction.repository.SpecificationBuilder;
 import com.demo.transaction.repository.TransactionRepository;
@@ -58,7 +60,7 @@ public class TransactionService {
 
     public TransactionDTO deposit(Long accountId, BigDecimal amount, String description) {
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found with id: " + accountId));
+                .orElseThrow(() -> new IllegalTransactionException("Account not found with id: " + accountId));
         
         BigDecimal balanceBefore = account.getBalance();
         account.setBalance(balanceBefore.add(amount));
@@ -79,10 +81,10 @@ public class TransactionService {
 
     public TransactionDTO withdraw(Long accountId, BigDecimal amount, String description) {
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found with id: " + accountId));
+                .orElseThrow(() -> new IllegalTransactionException("Account not found with id: " + accountId));
         
         if (account.getBalance().compareTo(amount) < 0) {
-            throw new RuntimeException("Insufficient balance");
+            throw new IllegalTransactionException("Insufficient balance");
         }
         
         BigDecimal balanceBefore = account.getBalance();
@@ -104,17 +106,17 @@ public class TransactionService {
 
     public TransactionDTO transfer(Long fromAccountId, Long toAccountId, BigDecimal amount, String description) {
         Account fromAccount = accountRepository.findById(fromAccountId)
-                .orElseThrow(() -> new RuntimeException("From account not found with id: " + fromAccountId));
+                .orElseThrow(() -> new IllegalTransactionException("From account not found with id: " + fromAccountId));
         
         Account toAccount = accountRepository.findById(toAccountId)
-                .orElseThrow(() -> new RuntimeException("To account not found with id: " + toAccountId));
+                .orElseThrow(() -> new IllegalTransactionException("To account not found with id: " + toAccountId));
         
         if (fromAccount.getBalance().compareTo(amount) < 0) {
-            throw new RuntimeException("Insufficient balance");
+            throw new IllegalTransactionException("Insufficient balance");
         }
         
         if (!fromAccount.getCurrency().equals(toAccount.getCurrency())) {
-            throw new RuntimeException("Currency mismatch");
+            throw new IllegalTransactionException("Currency mismatch");
         }
         
         BigDecimal fromBalanceBefore = fromAccount.getBalance();
@@ -148,7 +150,7 @@ public class TransactionService {
     public TransactionDTO updateTransaction(Long id, TransactionUpdateRequest request) {
         Transaction transaction = transactionRepository.findById(id)
                 .filter(t -> !t.getDeleted())
-                .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
+                .orElseThrow(() -> new IllegalTransactionException("Transaction not found with id: " + id));
         
         // 只允许更新描述和参考号，不允许更新金额、账户等关键信息
         if (request.getDescription() != null) {
@@ -169,8 +171,11 @@ public class TransactionService {
      */
     public void softDeleteTransaction(Long id) {
         Transaction transaction = transactionRepository.findById(id)
-                .filter(t -> !t.getDeleted())
-                .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
+                .orElseThrow(() -> new IllegalTransactionException("Transaction not found with id: " + id));
+
+        if (transaction.getDeleted()) {
+            throw new TransactionDeletedException("Transaction already deleted");
+        }
         
         transaction.setDeleted(true);
         transactionRepository.save(transaction);
