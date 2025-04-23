@@ -1,5 +1,5 @@
 # transaction-demo-java
-A Java Demo project for a simple transaction management
+A Java Demo project for a simple transaction management (based on SpringBoot 3, Java 21)
 
 ## Compile and Run
 
@@ -7,13 +7,13 @@ A Java Demo project for a simple transaction management
 # This will compile the frontend project to static files and build the backend project into a JAR file.
 mvn clean install
 
-# Run in local for testing
+# Run in local for testing only
 java -jar target/transaction-demo-1.0-SNAPSHOT.jar
 ```
 
-Visit <http://localhost:8080/> for the frontend GUI.
+Visit <http://localhost:8080/> for the frontend GUI (Vue3).
 
-Visit: <http://localhost:8080/h2-console/> for H2 console (user: `sa`, password: `pwd123`)
+Visit: <http://localhost:8080/h2-console/> for H2 console (user: `sa`, password: `pwd123` for dev only)
 
 ## APIs implemented
 
@@ -35,6 +35,7 @@ Visit: <http://localhost:8080/h2-console/> for H2 console (user: `sa`, password:
   - List Transactions: `GET /api/transactions`
     - Query Parameters: `page`, `size`, `sortField`, `order`, `id`, `accountId`, `transactionNumber`, `relatedAccountId`;
   - Delete Transaction: `DELETE /api/transactions/{id}`    # Soft delete
+
 
 ## Project Dependencies (maven pom.xml)
 
@@ -72,7 +73,7 @@ mvn clean package
 # use podman,
 podman build -t transaction-demo-app .
 
-# OR use docker
+# OR docker
 docker build -t transaction-demo-app .
 ```
 
